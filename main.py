@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
+from functions import get_file_content, get_files_info, write_file, run_python
+
 system_prompt = """
 You are a helpful AI coding agent.
 
@@ -94,6 +96,66 @@ available_functions = types.Tool(
 )
 
 
+def call_function(function_call, verbose=False):
+    # Hard coded working dir to ensure AI agent operates within bounds
+    cwd = "./calculator"
+
+    if verbose:
+        print(f"Calling function: {function_call.name}({function_call.args})")
+    else:
+        print(f" - Calling function: {function_call.name}")
+
+    functions = {
+        "get_files_info": get_files_info.get_files_info,
+        "get_file_content": get_file_content.get_file_content,
+        "write_file": write_file.write_file,
+        "run_python_file": run_python.run_python_file
+        }
+
+    try:
+        return types.Content(
+            role="tool",
+            parts=[
+                types.Part.from_function_response(
+                    name=function_call.name,
+                    response={"result": functions[function_call.name](cwd, **function_call.args)}
+                )
+            ]
+        )
+    except KeyError:
+        return types.Content(
+            role="tool",
+            parts=[
+                types.Part.from_function_response(
+                    name=function_call.name,
+                    response={"error": f"Unknown function: {function_call.name}"},
+                )
+            ],
+        )
+
+def generate_content(model, contents, verbose=False):
+    response = client.models.generate_content(
+        model=model,
+        contents=contents,
+        config=types.GenerateContentConfig(tools=[available_functions], system_instruction=system_prompt),
+        )
+    
+    content_response = []
+    if response.function_calls:
+        for function_call in response.function_calls:
+            print(f'Calling function: {function_call.name}{function_call.args}')
+            result = call_function(function_call)
+            if result.parts[0].function_response.response:
+                if verbose:
+                    print(f"-> {result.parts[0].function_response.response}")
+                
+                content_response.append(result.parts[0].function_response.response["result"])
+            else:
+                raise RuntimeError(f"Function {function_call.name} had no result")
+    
+    return ("/n".join(content_response), response)
+
+
 def main():
     model = "gemini-2.0-flash-001"
     if len(sys.argv) < 2:
@@ -110,22 +172,14 @@ def main():
         types.Content(role="user", parts=[types.Part(text=user_prompt)])
     ]
 
-    response = client.models.generate_content(
-        model=model,
-        contents=messages,
-        config=types.GenerateContentConfig(tools=[available_functions], system_instruction=system_prompt),
-        )
-    
-    if response.function_calls:
-        for function_call in response.function_calls:
-            print(f'Calling function: {function_call.name}{function_call.args}')
-    
-    print(response.text)
+    # Return tuple (response text, response object)
+    response = generate_content(model, messages, verbose)
+
+    print(response[0])
     if verbose:
         print(f'User prompt: {user_prompt}')
-        print(f'Prompt tokens: {response.usage_metadata.prompt_token_count}')
-        print(f'Response tokens: {response.usage_metadata.candidates_token_count}')
-
+        print(f'Prompt tokens: {response[1].usage_metadata.prompt_token_count}')
+        print(f'Response tokens: {response[1].usage_metadata.candidates_token_count}')
 
 if __name__ == "__main__":
     main()
