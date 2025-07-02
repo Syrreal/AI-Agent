@@ -1,8 +1,7 @@
 import os
 from google.genai import types
 
-# Max amount of characters allowed to be read from a file
-MAX_CHARS = 10000
+from config import MAX_CHARS
 
 schema_get_file_content = types.FunctionDeclaration(
     name="get_file_content",

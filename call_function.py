@@ -5,6 +5,8 @@ from functions.get_file_content import get_file_content, schema_get_file_content
 from functions.run_python import run_python_file, schema_run_python
 from functions.write_file import write_file, schema_write_file
 
+from config import WORKING_DIR
+
 available_functions = types.Tool(
     function_declarations=[
         schema_get_files_info,
@@ -15,8 +17,6 @@ available_functions = types.Tool(
 )
 
 def call_function(function_call, verbose=False):
-    # Hard coded working dir to ensure AI agent operates within bounds
-    cwd = "./calculator"
 
     if verbose:
         print(f"Calling function: {function_call.name}({function_call.args})")
@@ -36,7 +36,7 @@ def call_function(function_call, verbose=False):
             parts=[
                 types.Part.from_function_response(
                     name=function_call.name,
-                    response={"result": functions[function_call.name](cwd, **function_call.args)}
+                    response={"result": functions[function_call.name](WORKING_DIR, **function_call.args)}
                 )
             ]
         )

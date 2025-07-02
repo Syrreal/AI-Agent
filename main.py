@@ -7,6 +7,8 @@ from google.genai import types
 
 from call_function import call_function, available_functions
 
+from config import MODEL
+
 system_prompt = """
 You are a helpful AI coding agent.
 
@@ -49,7 +51,7 @@ def generate_content(model, contents, verbose=False):
 
 
 def main():
-    model = "gemini-2.0-flash-001"
+    
 
     if len(sys.argv) < 2:
         print("error: prompt not provided")
@@ -67,7 +69,7 @@ def main():
 
     # Return tuple (response text, response object)
     # Perform first task out of the loop to create variable :) 
-    response = generate_content(model, messages, verbose)
+    response = generate_content(MODEL, messages, verbose)
 
     loop_countdown = 19
     while loop_countdown:
