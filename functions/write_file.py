@@ -1,4 +1,23 @@
 import os
+from google.genai import types
+
+schema_write_file = types.FunctionDeclaration(
+    name="write_file",
+    description=f'Writes to specified file, constrained to the working directory. If file does not exist, a new file is created. Files are cleared completely before being written',
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "file_path": types.Schema(
+                type=types.Type.STRING,
+                description="Path of the file write to or create, relative to the working directory.",
+            ),
+            "content": types.Schema(
+                type=types.Type.STRING,
+                description="Content to write to the file"
+            )
+        },
+    ),
+)
 
 def write_file(working_directory, file_path, content):
     cwd = os.path.abspath(working_directory)

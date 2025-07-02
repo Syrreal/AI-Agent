@@ -1,5 +1,20 @@
 import os
 import subprocess
+from google.genai import types
+
+schema_run_python = types.FunctionDeclaration(
+    name="run_python_file",
+    description=f'Runs specified file, constrained to the working directory. Can only run files that end in the ".py" extension',
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "file_path": types.Schema(
+                type=types.Type.STRING,
+                description="Path of the file to run, relative to the working directory.",
+            ),
+        },
+    ),
+)
 
 def run_python_file(working_directory, file_path):
     cwd = os.path.abspath(working_directory)
