@@ -35,7 +35,6 @@ def generate_content(client, messages, verbose=False):
         # Gather a list of function call results
         content_responses = []
         for function_call in response.function_calls:
-            print(f'Calling function: {function_call.name}{function_call.args}')
             result = call_function(function_call, verbose)
             if result.parts[0].function_response.response:
                 if verbose:
