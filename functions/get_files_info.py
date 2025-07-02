@@ -29,7 +29,7 @@ def get_files_info(working_directory, directory=None):
     
     dir_contents = []
     try:
-        with os.scandir(os.path.join(os.path.abspath(working_directory), directory)) as dir:
+        with os.scandir(target_dir) as dir:
             for entry in dir:
                 dir_contents.append(f'- {entry.name}: file_size={entry.stat().st_size}, is_dir={entry.is_dir()}')
         return "\n".join(dir_contents)
