@@ -6,7 +6,7 @@ MODEL = "gemini-2.0-flash-001"
 # Max amount of characters allowed to be read from a file
 MAX_CHARS = 10000
 
-system_prompt = """
+SYSTEM_PROMPT = """
 You are a helpful AI coding agent.
 
 When a user asks a question or makes a request, make a function call plan. You can perform the following operations:
